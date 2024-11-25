@@ -6,14 +6,6 @@ function createServer() {
     const [path, queryString] = req.url.split('?');
     const errors = [];
 
-    if (!path || path === '/') {
-      errors.push({
-        message:
-          // eslint-disable-next-line max-len
-          'Text to convert is required. Correct request is: "/<TEXT_TO_CONVERT>?toCase=<CASE_NAME>".',
-      });
-    }
-
     const textToConvert = path.slice(1);
 
     if (!textToConvert) {
@@ -46,7 +38,8 @@ function createServer() {
     }
 
     if (errors.length > 0) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ errors }));
     }
 
@@ -55,16 +48,16 @@ function createServer() {
       toCase,
     );
 
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    const responseBody = {
+      originalCase,
+      targetCase: toCase,
+      originalText: textToConvert,
+      convertedText,
+    };
 
-    res.end(
-      JSON.stringify({
-        originalCase,
-        targetCase: toCase,
-        originalText: textToConvert,
-        convertedText,
-      }),
-    );
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(responseBody));
   });
 }
 
